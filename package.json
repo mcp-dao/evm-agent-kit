@@ -1,0 +1,83 @@
+{
+  "name": "evm-agent-kit",
+  "version": "0.0.0",
+  "description": "Connect AI Agents to EVM protocols",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "docs": "typedoc src --out docs",
+    "test": "tsx test/index.ts",
+    "test:vercel-ai": "tsx test/agent_sdks/vercel_ai.ts",
+    "test:mcp": "tsx test/mcp.ts",
+    "generate": "tsx src/utils/keypair.ts",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "tool-summary": "tsx src/utils/analyzeTools.ts",
+    "tool-summary:langchain": "tsx src/utils/analyzeTools.ts --langchain",
+    "check-tool-names:langchain": "tsx scripts/check-langchain-tool-duplicates.ts",
+    "eval": "vitest run --config ls.vitest.config.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/evm-kit/evm-agent-kit.git"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "keywords": [
+    "Ethereum",
+    "agent",
+    "ai",
+    "Evm agent kit"
+  ],
+  "author": "evm-kit",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@ai-sdk/openai": "^1.0.11",
+    "@langchain/core": "^0.3.26",
+    "@langchain/groq": "^0.1.2",
+    "@langchain/langgraph": "^0.2.36",
+    "@langchain/openai": "^0.3.16",
+    "@modelcontextprotocol/sdk": "^1.5.0",
+    "@openzeppelin/contracts": "^5.2.0",
+    "ai": "4.0.22",
+    "axios": "^1.7.9",
+    "bn.js": "^5.2.1",
+    "bs58": "^6.0.0",
+    "chai": "^5.1.2",
+    "decimal.js": "^10.4.3",
+    "dotenv": "^16.4.7",
+    "ethers": "^6.13.5",
+    "form-data": "^4.0.1",
+    "fuse.js": "^7.1.0",
+    "langchain": "^0.3.8",
+    "langsmith": "^0.3.7",
+    "openai": "^4.77.0",
+    "tiktoken": "^1.0.18",
+    "typedoc": "^0.27.6",
+    "viem": "^2.23.14",
+    "web3": "^4.16.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.1.6",
+    "@types/chai": "^5.0.1",
+    "@types/node": "^22.10.2",
+    "@typescript-eslint/eslint-plugin": "^8.18.2",
+    "@typescript-eslint/parser": "^8.18.2",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.3.0",
+    "prettier": "^3.4.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vite-plugin-node-polyfills": "^0.23.0",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.0.5"
+  }
+}
