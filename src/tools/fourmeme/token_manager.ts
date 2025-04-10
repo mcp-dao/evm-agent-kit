@@ -1,10 +1,6 @@
+import { Address, encodeFunctionData, formatUnits, parseEther } from "viem";
 import { EvmAgentKit } from "../../agent";
-import {
-  Address,
-  encodeFunctionData,
-  parseEther,
-  encodeAbiParameters,
-} from "viem";
+import { approve } from "../../utils";
 import { tokenManagerAbi } from "./token_manager_abi";
 
 const getNonce = async (agent: EvmAgentKit) => {
@@ -176,6 +172,395 @@ const createFourMemeToken = async (
   };
 };
 
+const getUserInfo = async (
+  accessToken: string,
+): Promise<{
+  userId: string;
+}> => {
+  const userInfoResponse = await fetch(
+    "https://four.meme/meme-api/v1/private/user/info",
+    {
+      headers: {
+        "meme-web-access": accessToken,
+      },
+    },
+  );
+  const userInfo = await userInfoResponse.json();
+  if (!userInfo.data) {
+    throw new Error(JSON.stringify(userInfo));
+  }
+  return userInfo.data;
+};
+
+export async function getTokenHoldings(agent: EvmAgentKit) {
+  const nonce = await getNonce(agent);
+
+  const accessToken = await getAccessToken(nonce, agent);
+  if (!accessToken) {
+    return {
+      error: "Failed to get access token",
+      errorMsg: JSON.stringify(accessToken),
+    };
+  }
+
+  const userInfo = await getUserInfo(accessToken);
+  if (!userInfo) {
+    return {
+      error: "Failed to get user info",
+      errorMsg: JSON.stringify(userInfo),
+    };
+  }
+
+  const listTokensResponse = await fetch(
+    `https://four.meme/meme-api/v1/private/user/token/owner/list?userId=${userInfo.userId}&orderBy=CREATE_DATE&sorted=DESC&tokenName=&pageIndex=1&pageSize=300&symbol=`,
+    {
+      headers: {
+        "meme-web-access": accessToken,
+      },
+    },
+  );
+
+  const listTokens = await listTokensResponse.json();
+  if (!listTokens.data) {
+    return {
+      error: "Failed to list tokens",
+      errorMsg: JSON.stringify(listTokens),
+    };
+  }
+
+  const tokenPromises = listTokens.data.map(async (token: any) => {
+    try {
+      const balance = await agent.connection.readContract({
+        address: token.tokenAddress,
+        abi: [
+          {
+            inputs: [
+              { internalType: "string", name: "name", type: "string" },
+              { internalType: "string", name: "symbol", type: "string" },
+              { internalType: "uint256", name: "totalSupply", type: "uint256" },
+            ],
+            stateMutability: "nonpayable",
+            type: "constructor",
+          },
+          {
+            anonymous: false,
+            inputs: [
+              {
+                indexed: true,
+                internalType: "address",
+                name: "owner",
+                type: "address",
+              },
+              {
+                indexed: true,
+                internalType: "address",
+                name: "spender",
+                type: "address",
+              },
+              {
+                indexed: false,
+                internalType: "uint256",
+                name: "value",
+                type: "uint256",
+              },
+            ],
+            name: "Approval",
+            type: "event",
+          },
+          {
+            anonymous: false,
+            inputs: [
+              {
+                indexed: true,
+                internalType: "address",
+                name: "previousOwner",
+                type: "address",
+              },
+              {
+                indexed: true,
+                internalType: "address",
+                name: "newOwner",
+                type: "address",
+              },
+            ],
+            name: "OwnershipTransferred",
+            type: "event",
+          },
+          {
+            anonymous: false,
+            inputs: [
+              {
+                indexed: true,
+                internalType: "address",
+                name: "from",
+                type: "address",
+              },
+              {
+                indexed: true,
+                internalType: "address",
+                name: "to",
+                type: "address",
+              },
+              {
+                indexed: false,
+                internalType: "uint256",
+                name: "value",
+                type: "uint256",
+              },
+            ],
+            name: "Transfer",
+            type: "event",
+          },
+          {
+            inputs: [],
+            name: "MODE_NORMAL",
+            outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [],
+            name: "MODE_TRANSFER_CONTROLLED",
+            outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [],
+            name: "MODE_TRANSFER_RESTRICTED",
+            outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [],
+            name: "_mode",
+            outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "address", name: "owner", type: "address" },
+              { internalType: "address", name: "spender", type: "address" },
+            ],
+            name: "allowance",
+            outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "address", name: "spender", type: "address" },
+              { internalType: "uint256", name: "amount", type: "uint256" },
+            ],
+            name: "approve",
+            outputs: [{ internalType: "bool", name: "", type: "bool" }],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "address", name: "account", type: "address" },
+            ],
+            name: "balanceOf",
+            outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [],
+            name: "decimals",
+            outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "address", name: "spender", type: "address" },
+              {
+                internalType: "uint256",
+                name: "subtractedValue",
+                type: "uint256",
+              },
+            ],
+            name: "decreaseAllowance",
+            outputs: [{ internalType: "bool", name: "", type: "bool" }],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "address", name: "spender", type: "address" },
+              { internalType: "uint256", name: "addedValue", type: "uint256" },
+            ],
+            name: "increaseAllowance",
+            outputs: [{ internalType: "bool", name: "", type: "bool" }],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            inputs: [],
+            name: "name",
+            outputs: [{ internalType: "string", name: "", type: "string" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [],
+            name: "owner",
+            outputs: [{ internalType: "address", name: "", type: "address" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [],
+            name: "renounceOwnership",
+            outputs: [],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            inputs: [{ internalType: "uint256", name: "v", type: "uint256" }],
+            name: "setMode",
+            outputs: [],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            inputs: [],
+            name: "symbol",
+            outputs: [{ internalType: "string", name: "", type: "string" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [],
+            name: "totalSupply",
+            outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+            stateMutability: "view",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "address", name: "to", type: "address" },
+              { internalType: "uint256", name: "amount", type: "uint256" },
+            ],
+            name: "transfer",
+            outputs: [{ internalType: "bool", name: "", type: "bool" }],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "address", name: "from", type: "address" },
+              { internalType: "address", name: "to", type: "address" },
+              { internalType: "uint256", name: "amount", type: "uint256" },
+            ],
+            name: "transferFrom",
+            outputs: [{ internalType: "bool", name: "", type: "bool" }],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            inputs: [
+              { internalType: "address", name: "newOwner", type: "address" },
+            ],
+            name: "transferOwnership",
+            outputs: [],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+        ],
+        functionName: "balanceOf",
+        args: [agent.wallet.getAddress() as Address],
+      });
+
+      return {
+        userId: token.userId,
+        userName: token.userName,
+        // "tokenId": token.tokenId,
+        tokenName: token.tokenName,
+        tokenAddress: token.tokenAddress,
+        shortName: token.shortName,
+        descr: token.descr,
+        image: token.image,
+        myTokenAmount: formatUnits(balance, 18),
+        increase: `${token.increase} * 100%`,
+        price: token.price,
+        dayIncrease: `${token.dayIncrease} * 100%`,
+        status: token.status,
+        oscarStatus: token.oscarStatus,
+        symbol: token.symbol,
+        progressToBondingCurve: `${token.progress} * 100%`,
+      };
+    } catch (error) {
+      console.error(error);
+      return {
+        userId: token.userId,
+        userName: token.userName,
+        tokenName: token.tokenName,
+        tokenAddress: token.tokenAddress,
+        shortName: token.shortName,
+        descr: token.descr,
+        image: token.image,
+        myTokenAmount: 0n,
+        increase: `${token.increase} * 100%`,
+        price: token.price,
+        dayIncrease: `${token.dayIncrease} * 100%`,
+        status: token.status,
+        oscarStatus: token.oscarStatus,
+        symbol: token.symbol,
+        progressToBondingCurve: `${token.progress} * 100%`,
+      };
+    }
+  });
+
+  return Promise.all(tokenPromises);
+}
+
+export async function getFourMemeTrendingTokens(_agent: EvmAgentKit) {
+  const trendingTokensResponse = await fetch(
+    "https://four.meme/meme-api/v1/private/token/query?orderBy=Hot&tokenName=&listedPancake=false&pageIndex=1&pageSize=30&symbol=&labels=",
+  );
+
+  const trendingTokens = await trendingTokensResponse.json();
+  if (!trendingTokens.data) {
+    return {
+      error: "Failed to get trending tokens",
+      errorMsg: JSON.stringify(trendingTokens),
+    };
+  }
+
+  return trendingTokens.data.map((token: any) => ({
+    id: token.id,
+    tokenAddress: token.address,
+    image: token.image,
+    name: token.name,
+    shortName: token.shortName,
+    symbol: token.symbol,
+    descr: token.descr,
+    twitterUrl: token.twitterUrl,
+    telegramUrl: token.telegramUrl,
+    webUrl: token.webUrl,
+    launchTime: token.launchTime,
+    userId: token.userId,
+    tokenPrice: {
+      price: token.tokenPrice.price,
+      maxPrice: token.tokenPrice.maxPrice,
+      increasePercent: token.tokenPrice.increase,
+      marketCapInNetworkCode: token.tokenPrice.marketCap,
+      dayIncreasePercent: token.tokenPrice.dayIncrease,
+      progressToBondingCurvePercent: token.tokenPrice.progress,
+      tradingVolumeUsd: token.tokenPrice.tradingUsd,
+    },
+    networkCode: token.networkCode,
+    label: token.label,
+    createDate: token.createDate,
+    dexType: token.dexType,
+  }));
+}
+
 /**
  * Deploy a token via TokenManager's createToken() using raw transaction
  */
@@ -275,94 +660,159 @@ export async function createToken(params: {
 /**
  * Agent purchases tokens via the Token Manager on BNB Chain
  */
-export async function purchaseToken(
-  agent: EvmAgentKit,
-  tokenManagerAddress: Address,
-  tokenAddress: Address,
-  amount: bigint,
-  maxFunds: bigint,
-) {
-  const data = encodeFunctionData({
-    abi: tokenManagerAbi,
-    functionName: "TokenPurchase",
-    args: [tokenAddress, amount, maxFunds],
-  });
-
-  const txHash = await agent.wallet.sendTransaction({
-    to: tokenManagerAddress,
-    data,
-    value: maxFunds, // Pass BNB if required
-  });
-
-  return txHash;
-}
-
-export async function sellToken(
-  agent: EvmAgentKit,
-  tokenManagerAddress: Address,
-  tokenAddress: Address,
-  tokenAmount: bigint,
-) {
-  const data = encodeFunctionData({
-    abi: tokenManagerAbi,
-    functionName: "sellToken",
-    args: [tokenAddress, tokenAmount],
-  });
-
-  const txHash = await agent.wallet.sendTransaction({
-    to: tokenManagerAddress,
-    data,
-  });
-
-  // console.log(`✅ Token sale submitted: ${txHash}`);
-  return txHash;
-}
-
-export function encodeTokenInfo(params: {
-  base: Address;
-  quote: Address;
-  template: bigint;
-  totalSupply: bigint;
-  maxOffers: bigint;
-  maxRaising: bigint;
-  launchTime: bigint;
-  offers?: bigint;
-  funds?: bigint;
-  lastPrice?: bigint;
-  K?: bigint;
-  T?: bigint;
-  status?: bigint;
-}): `0x${string}` {
-  return encodeAbiParameters(
-    [
-      { name: "base", type: "address" },
-      { name: "quote", type: "address" },
-      { name: "template", type: "uint256" },
-      { name: "totalSupply", type: "uint256" },
-      { name: "maxOffers", type: "uint256" },
-      // { name: "maxRaising", type: "uint256" },
-      { name: "launchTime", type: "uint256" },
-      { name: "offers", type: "uint256" },
-      { name: "funds", type: "uint256" },
-      { name: "lastPrice", type: "uint256" },
-      { name: "K", type: "uint256" },
-      { name: "T", type: "uint256" },
-      { name: "status", type: "uint256" },
-    ],
-    [
-      params.base,
-      params.quote,
-      params.template,
-      params.totalSupply,
-      params.maxOffers,
-      // params.maxRaising,
-      params.launchTime,
-      params.offers ?? 0n,
-      params.funds ?? 0n,
-      params.lastPrice ?? 0n,
-      params.K ?? 1n,
-      params.T ?? 3600n,
-      params.status ?? 0n,
-    ],
+export async function purchaseFourMemeToken(params: {
+  agent: EvmAgentKit;
+  tokenManagerAddress: Address;
+  tokenAddress: Address;
+  amount: bigint;
+}) {
+  const { agent, tokenManagerAddress, tokenAddress, amount } = params;
+  // First get info about the token
+  const tokenInfo = await fetch(
+    `https://four.meme/meme-api/v1/private/token/get/v2?address=${tokenAddress}`,
   );
+  const tokenInfoData = (await tokenInfo.json()).data;
+  if (!tokenInfoData) {
+    return {
+      error: "Failed to get token info",
+      errorMsg: JSON.stringify(tokenInfoData),
+    };
+  }
+
+  if (tokenInfoData.symbol !== "BNB") {
+    return {
+      error: "Only BNB is supported at this time.",
+      errorMsg: JSON.stringify(tokenInfoData),
+    };
+  }
+
+  const data = encodeFunctionData({
+    abi: [
+      {
+        inputs: [
+          {
+            internalType: "address",
+            name: "token",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "funds",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "minAmount",
+            type: "uint256",
+          },
+        ],
+        name: "buyTokenAMAP",
+        outputs: [],
+        stateMutability: "payable",
+        type: "function",
+      },
+    ],
+    functionName: "buyTokenAMAP",
+    args: [
+      tokenAddress,
+      parseEther(amount.toString()),
+      parseEther(
+        // 0.001 is buffer to account for any extra fees
+        (
+          (Number(amount) - 0.001) /
+          parseFloat(tokenInfoData.tokenPrice.price)
+        ).toString(),
+      ),
+    ],
+  });
+
+  const txHash = await agent.wallet.sendTransaction({
+    to: tokenManagerAddress,
+    data,
+    value: parseEther(amount.toString()),
+  });
+
+  return txHash;
+}
+
+export async function sellToken(params: {
+  agent: EvmAgentKit;
+  tokenManagerAddress: Address;
+  tokenAddress: Address;
+  tokenAmount: bigint;
+}) {
+  const { agent, tokenManagerAddress, tokenAddress, tokenAmount } = params;
+  const tokenListingsResult = await getTokenHoldings(agent);
+
+  // Check if the result is an error object
+  if ("error" in tokenListingsResult) {
+    return {
+      error: "Failed to get token holdings",
+      errorMsg: tokenListingsResult.errorMsg,
+    };
+  }
+
+  const tokenListing = tokenListingsResult.find(
+    (listing: any) => listing.tokenAddress === tokenAddress,
+  );
+  if (!tokenListing) {
+    return {
+      error: "Token not found",
+      errorMsg: JSON.stringify(tokenListingsResult),
+    };
+  }
+
+  if (tokenListing.myTokenAmount < tokenAmount) {
+    return {
+      error: "Token amount is less than the amount to sell",
+      errorMsg: JSON.stringify(tokenListing),
+    };
+  }
+
+  // First approve the token manager to spend the tokens
+  const approvalResult = await approve(
+    agent.wallet,
+    tokenAddress,
+    tokenManagerAddress,
+    parseEther(tokenAmount.toString()),
+  );
+
+  if (approvalResult.startsWith("Error")) {
+    return {
+      error: "Failed to approve token spending",
+      errorMsg: approvalResult,
+    };
+  }
+
+  const data = encodeFunctionData({
+    abi: [
+      {
+        inputs: [
+          {
+            internalType: "address",
+            name: "token",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "amount",
+            type: "uint256",
+          },
+        ],
+        name: "sellToken",
+        outputs: [],
+        stateMutability: "nonpayable",
+        type: "function",
+      },
+    ],
+    functionName: "sellToken",
+    args: [tokenAddress, parseEther(tokenAmount.toString())],
+  });
+
+  const txHash = await agent.wallet.sendTransaction({
+    to: tokenManagerAddress,
+    data,
+  });
+
+  return txHash;
 }

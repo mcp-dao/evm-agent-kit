@@ -4,7 +4,7 @@ export * from "./fourmeme";
 export * from "./compound";
 
 import type { EvmAgentKit } from "../agent";
-// import { createFourMemeToken } from "./fourmeme/create_token";
+
 import {
   ElfaPingTool,
   ElfaApiKeyStatusTool,
@@ -14,7 +14,11 @@ import {
   ElfaGetTopMentionsTool,
   ElfaAccountSmartStatsTool,
   createFourMemeTokenTool,
+  getTokenHoldingsTool,
+  sellTokenTool,
   CompoundSupplyTool,
+  getTrendingTokensTool,
+  purchaseFourMemeTokenTool,
 } from "./index";
 
 export function createEvmTools(evmKit: EvmAgentKit) {
@@ -29,7 +33,10 @@ export function createEvmTools(evmKit: EvmAgentKit) {
 
     // FourMeme
     createFourMemeTokenTool(evmKit),
-
+    getTokenHoldingsTool(evmKit),
+    getTrendingTokensTool(evmKit),
+    sellTokenTool(evmKit),
+    purchaseFourMemeTokenTool(evmKit),
     // Compound
     new CompoundSupplyTool(evmKit),
   ];

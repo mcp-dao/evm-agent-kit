@@ -15,7 +15,11 @@ import getCoingeckoTopGainersAction from "./coingecko/getCoingeckoTopGainers";
 import getCoingeckoTrendingPoolsAction from "./coingecko/getCoingeckoTrendingPools";
 import getCoingeckoTrendingTokensAction from "./coingecko/getCoingeckoTrendingTokens";
 import fourmemeCreateTokenAction from "./fourmeme/create_token_action";
+import fourmemeGetTokenHoldingsAction from "./fourmeme/get_token_holdings_action";
+import fourmemeGetTrendingTokensAction from "./fourmeme/get_trending_tokens_action";
+import fourmemeSellTokenAction from "./fourmeme/sell_token_action";
 import supplyCompoundAction from "./compound/supply";
+import fourmemePurchaseTokenAction from "./fourmeme/purchase_token_action";
 
 export const ACTIONS = {
   GET_INFO_ACTION: getInfoAction,
@@ -35,6 +39,10 @@ export const ACTIONS = {
   GET_COINGECKO_TRENDING_POOLS_ACTION: getCoingeckoTrendingPoolsAction,
   GET_COINGECKO_TRENDING_TOKENS_ACTION: getCoingeckoTrendingTokensAction,
   FOURMEME_CREATE_TOKEN_ACTION: fourmemeCreateTokenAction,
+  FOURMEME_GET_TOKEN_HOLDINGS_ACTION: fourmemeGetTokenHoldingsAction,
+  FOURMEME_SELL_TOKEN_ACTION: fourmemeSellTokenAction,
+  FOURMEME_GET_TRENDING_TOKENS_ACTION: fourmemeGetTrendingTokensAction,
+  FOURMEME_PURCHASE_TOKEN_ACTION: fourmemePurchaseTokenAction,
   COMPOUND_SUPPLY_ACTION: supplyCompoundAction,
 };
 

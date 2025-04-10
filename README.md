@@ -154,6 +154,140 @@ const tvl = await agent.fetchProtocolTvl("uniswap");
 console.log("Uniswap TVL:", tvl);
 ```
 
+### Creating a New Tool
+
+Here's a complete example of creating a new tool in EVM Agent Kit:
+
+#### 1. Create the Tool
+
+**`src/tools/my_tool/my_function.ts`**:
+```typescript
+import { EvmAgentKit } from "../../agent";
+import { Address } from "viem";
+
+/**
+ * Description of what your tool does
+ * @param agent - EvmAgentKit instance
+ * @param param1 - Description of first parameter
+ * @param param2 - Description of second parameter
+ * @returns Promise resolving to the result
+ */
+export async function my_function(
+  agent: EvmAgentKit,
+  param1: string,
+  param2?: Address,
+): Promise<any> {
+  // Implementation of your tool
+  // Use agent.connection, agent.wallet, etc. to interact with blockchain
+  
+  return result;
+}
+```
+
+**`src/tools/my_tool/index.ts`**:
+```typescript
+export * from "./my_function";
+```
+
+#### 2. Create a LangChain Tool
+
+**`src/langchain/my_tool/my_tool.ts`**:
+```typescript
+import { Tool } from "langchain/tools";
+import { EvmAgentKit } from "../../agent";
+
+export class MyTool extends Tool {
+  name = "my_tool_name";
+  description = `Description of what your tool does.
+  
+  Inputs (JSON string):
+    - param1: string, description (required)
+    - param2: string, description (optional)`;
+
+  constructor(private agent: EvmAgentKit) {
+    super();
+  }
+
+  protected async _call(input: string): Promise<string> {
+    try {
+      const parsedInput = JSON.parse(input);
+      const { param1, param2 } = parsedInput;
+      
+      if (!param1) {
+        throw new Error("param1 is required.");
+      }
+      
+      const result = await this.agent.myFunction(param1, param2);
+      
+      return JSON.stringify({ status: "success", data: result });
+    } catch (error: any) {
+      return JSON.stringify({
+        status: "error",
+        message: error.message,
+      });
+    }
+  }
+}
+```
+
+#### 3. Create an Action
+
+**`src/actions/my_tool/my_action.ts`**:
+```typescript
+import { Action } from "../../types/action";
+import { EvmAgentKit } from "../../agent";
+import { z } from "zod";
+
+export const myAction: Action = {
+  name: "MY_ACTION",
+  similes: ["my action", "perform my action", "do my action"],
+  description: "Description of what your action does.",
+  examples: [
+    [
+      {
+        input: { param1: "value1", param2: "value2" },
+        output: { 
+          status: "success", 
+          data: { result: "example result" },
+          message: "Action completed successfully" 
+        },
+        explanation: "Explanation of what this example demonstrates.",
+      },
+    ],
+  ],
+  schema: z.object({
+    param1: z.string().describe("Description of param1"),
+    param2: z.string().optional().describe("Description of param2"),
+  }),
+  handler: async (agent: EvmAgentKit, input: Record<string, any>) => {
+    const { param1, param2 } = input;
+    
+    const result = await agent.myFunction(param1, param2);
+    
+    return {
+      status: "success",
+      data: result,
+      message: "Action completed successfully",
+    };
+  },
+};
+```
+
+#### 4. Add to Agent
+
+**`src/agent/index.ts`**:
+```typescript
+import { my_function } from "../tools";
+
+export class EvmAgentKit {
+  // Existing properties and methods...
+  
+  async myFunction(param1: string, param2?: Address): Promise<any> {
+    return my_function(this, param1, param2);
+  }
+}
+```
+
 ## Supported Chains
 
 The toolkit supports all EVM-compatible chains. Specific features like Four.meme token creation are currently only available on specific chains (BSC for Four.meme).

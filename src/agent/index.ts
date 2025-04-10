@@ -1,36 +1,40 @@
 import {
-  createPublicClient,
-  PublicClient,
-  http,
   Address,
+  createPublicClient,
   createWalletClient,
+  http,
+  PublicClient,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
+import { bsc } from "viem/chains";
 import {
-  get_erc20_balance,
-  transfer,
-  fetchPrices,
-  getProtocolTvl,
   createToken,
-  getTokenInfo,
+  fetchPrices,
+  get_erc20_balance,
+  getElfaAiApiKeyStatus,
+  getFourMemeTrendingTokens,
   getLatestPools,
+  getProtocolTvl,
+  getSmartMentions,
+  getSmartTwitterAccountStats,
+  getTokenHoldings,
+  getTokenInfo,
   getTokenPriceData,
   getTopGainers,
+  getTopMentionsByTicker,
   getTrendingPools,
   getTrendingTokens,
-  pingElfaAiApi,
-  getElfaAiApiKeyStatus,
-  getSmartMentions,
-  getTopMentionsByTicker,
-  searchMentionsByKeywords,
   getTrendingTokensUsingElfaAi,
-  getSmartTwitterAccountStats,
+  pingElfaAiApi,
+  purchaseFourMemeToken,
+  searchMentionsByKeywords,
+  sellToken,
   supply,
+  transfer,
 } from "../tools";
+import { DEFILLAMA_NETWORK_MAPPING } from "../tools/defillama/constants";
 import { Config } from "../types";
 import { EvmWalletProvider, ViemWalletProvider } from "../wallet-providers";
-import { DEFILLAMA_NETWORK_MAPPING } from "../tools/defillama/constants";
-import { mainnet } from "viem/chains";
 
 /**
  * Main class for interacting with Evm blockchains
@@ -62,7 +66,8 @@ export class EvmAgentKit {
 
     const client = createWalletClient({
       account,
-      chain: mainnet, // BNB Chain
+      // chain: mainnet, // BNB Chain
+      chain: bsc,
       transport: http(process.env.RPC_URL!),
     });
     this.wallet = new ViemWalletProvider(client);
@@ -87,6 +92,10 @@ export class EvmAgentKit {
       assetId,
       amount,
     });
+  }
+
+  async getFourMemeTokens() {
+    return await getTokenHoldings(this);
   }
 
   async createFourMemeToken(
@@ -125,6 +134,36 @@ export class EvmAgentKit {
       webUrl,
       twitterUrl,
       telegramUrl,
+    });
+  }
+
+  async getFourMemeTrendingTokens() {
+    return await getFourMemeTrendingTokens(this);
+  }
+
+  async sellFourMemeToken(
+    tokenManagerAddress: Address,
+    tokenAddress: Address,
+    tokenAmount: bigint,
+  ) {
+    return await sellToken({
+      agent: this,
+      tokenManagerAddress,
+      tokenAddress,
+      tokenAmount,
+    });
+  }
+
+  async purchaseFourMemeToken(
+    tokenManagerAddress: Address,
+    tokenAddress: Address,
+    tokenAmount: bigint,
+  ) {
+    return await purchaseFourMemeToken({
+      agent: this,
+      tokenManagerAddress,
+      tokenAddress,
+      amount: tokenAmount,
     });
   }
 
