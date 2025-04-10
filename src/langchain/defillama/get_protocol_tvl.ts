@@ -8,7 +8,7 @@ export function getProtocolTvlTool(_agent: EvmAgentKit) {
     name: "get_protocol_tvl",
     description: "Get Total Value Locked (TVL) for a specific protocol",
     schema: z.object({
-      slug: z.array(z.string()).describe("The protocol slug identifier"),
+      slug: z.string().describe("The protocol slug identifier"),
     }),
     func: async (input: any) => {
       try {
