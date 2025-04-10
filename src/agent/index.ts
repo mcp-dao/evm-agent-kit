@@ -170,16 +170,22 @@ export class EvmAgentKit {
   async fetchTokenPriceByChainId(tokenAddr: string, chainId: number) {
     const chainSlug = DEFILLAMA_NETWORK_MAPPING[chainId];
     const chainTokenIdentifier = `${chainSlug}:${tokenAddr}`;
-    return fetchPrices([chainTokenIdentifier]);
+    return fetchPrices({
+      chainTokenAddrStrings: [chainTokenIdentifier],
+    });
   }
 
   async fetchTokenPriceByChainSlug(tokenAddr: string, chainSlug: string) {
     const chainTokenIdentifier = `${chainSlug}:${tokenAddr}`;
-    return fetchPrices([chainTokenIdentifier]);
+    return fetchPrices({
+      chainTokenAddrStrings: [chainTokenIdentifier],
+    });
   }
 
   async fetchTokenPrices(chainTokenIdentifiers: string[]) {
-    return fetchPrices(chainTokenIdentifiers);
+    return fetchPrices({
+      chainTokenAddrStrings: chainTokenIdentifiers,
+    });
   }
 
   async fetchProtocolTvl(slug: string): Promise<string> {

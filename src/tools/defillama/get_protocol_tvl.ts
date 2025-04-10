@@ -41,7 +41,9 @@ export async function getProtocolTvl(slug: string): Promise<string> {
   const slugMatches = getSlugMatch(slug, "protocol");
 
   if (slugMatches.length === 0) {
-    throw new Error("No matching protocol slugs found");
+    throw new Error(
+      `No matching protocol slugs found. Here is the list of available protocol slugs: ${DEFILLAMA_PROTOCOL_SLUGS}`,
+    );
   }
 
   // Try each potential match until one works

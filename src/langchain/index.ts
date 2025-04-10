@@ -2,6 +2,7 @@ export * from "./agent";
 export * from "./elfa_ai";
 export * from "./fourmeme";
 export * from "./compound";
+export * from "./defillama";
 
 import type { EvmAgentKit } from "../agent";
 
@@ -19,6 +20,7 @@ import {
   CompoundSupplyTool,
   getTrendingTokensTool,
   purchaseFourMemeTokenTool,
+  getProtocolTvlTool,
 } from "./index";
 
 export function createEvmTools(evmKit: EvmAgentKit) {
@@ -39,5 +41,8 @@ export function createEvmTools(evmKit: EvmAgentKit) {
     purchaseFourMemeTokenTool(evmKit),
     // Compound
     new CompoundSupplyTool(evmKit),
+
+    // DefiLlama
+    getProtocolTvlTool(evmKit),
   ];
 }

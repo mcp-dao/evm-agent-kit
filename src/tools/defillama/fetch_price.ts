@@ -5,11 +5,12 @@ import { DEFILLAMA_PRICES_URL } from "./constants";
  * @param searchWidth The width of the search window for the price data. Default is "6h"
  * @returns JSON string of the price data
  */
-export async function fetchPrices(
-  chainTokenAddrStrings: string[],
-  searchWidth?: string,
-): Promise<string> {
+export async function fetchPrices(args: {
+  chainTokenAddrStrings: string[];
+  searchWidth?: string;
+}): Promise<string> {
   try {
+    const { chainTokenAddrStrings, searchWidth } = args;
     const params = new URLSearchParams({});
     const tokens = chainTokenAddrStrings.join(",");
 

@@ -20,6 +20,8 @@ import fourmemeGetTrendingTokensAction from "./fourmeme/get_trending_tokens_acti
 import fourmemeSellTokenAction from "./fourmeme/sell_token_action";
 import supplyCompoundAction from "./compound/supply";
 import fourmemePurchaseTokenAction from "./fourmeme/purchase_token_action";
+import fetchPriceAction from "./defillama/fetch_price_action";
+import getProtocolTvlAction from "./defillama/get_protocol_tvl_action";
 
 export const ACTIONS = {
   GET_INFO_ACTION: getInfoAction,
@@ -44,6 +46,8 @@ export const ACTIONS = {
   FOURMEME_GET_TRENDING_TOKENS_ACTION: fourmemeGetTrendingTokensAction,
   FOURMEME_PURCHASE_TOKEN_ACTION: fourmemePurchaseTokenAction,
   COMPOUND_SUPPLY_ACTION: supplyCompoundAction,
+  DEFILLAMA_FETCH_PRICE: fetchPriceAction,
+  DEFILLAMA_GET_PROTOCOL_TVL: getProtocolTvlAction,
 };
 
 export type { Action, ActionExample, Handler } from "../types/action";
