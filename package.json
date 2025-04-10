@@ -37,7 +37,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@ai-sdk/openai": "^1.0.11",
-    "@langchain/core": "^0.3.26",
+    "@langchain/core": "0.3.26",
     "@langchain/groq": "^0.1.2",
     "@langchain/langgraph": "^0.2.36",
     "@langchain/openai": "^0.3.16",
