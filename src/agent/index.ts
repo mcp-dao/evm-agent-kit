@@ -62,7 +62,7 @@ export class EvmAgentKit {
     this.wallet_address = privateKeyToAccount(private_key as Address).address;
     this.privateKey = private_key;
 
-    const account = privateKeyToAccount(process.env.EVM_PRIVATE_KEY as Address);
+    const account = privateKeyToAccount(private_key as Address);
 
     const client = createWalletClient({
       account,
