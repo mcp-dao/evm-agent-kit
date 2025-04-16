@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "prepare": "bun run build",
     "build": "tsc",
     "docs": "typedoc src --out docs",
     "test": "tsx test/index.ts",
