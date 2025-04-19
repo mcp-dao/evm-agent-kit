@@ -71,13 +71,13 @@ Anyone - whether an SF-based AI researcher or a crypto-native builder - can brin
 ## 📦 Installation
 
 ```bash
-npm install evm-agent-kit
+npm install evm-ai-kit
 ```
 
 ## Quick Start
 
 ```typescript
-import { EvmAgentKit, createEvmTools } from "evm-agent-kit";
+import { EvmAgentKit, createEvmTools } from "evm-ai-kit";
 
 // Initialize with private key and optional RPC URL
 const agent = new EvmAgentKit(
