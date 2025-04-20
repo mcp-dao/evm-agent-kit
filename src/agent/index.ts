@@ -68,7 +68,7 @@ export class EvmAgentKit {
       account,
       // chain: mainnet, // BNB Chain
       chain: bsc,
-      transport: http(process.env.RPC_URL!),
+      transport: http(rpc_url),
     });
     this.wallet = new ViemWalletProvider(client);
 
