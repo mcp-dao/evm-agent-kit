@@ -1,6 +1,6 @@
 {
-  "name": "evm-agent-kit",
-  "version": "0.0.0",
+  "name": "@playai/evm-agent-kit",
+  "version": "0.0.1",
   "description": "Connect AI Agents to EVM protocols",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/evm-kit/evm-agent-kit.git"
+    "url": "https://github.com/PlayAINetwork/evm-agent-kit.git"
   },
   "engines": {
     "node": ">=20.0.0",
